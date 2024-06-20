@@ -27,18 +27,37 @@ To run Module M1, use the following.
 python ./M1_active_initialization.py $data_id
 ```
 
-### 3. Execute Module M2 (Actively Enhanced PU Transduction)
-To run Module M2 to get a fully labeled training set, use the following.
+### 3. Execute Module M2 (Actively Enhanced PU Transduction) and Knowledge-guided Training Examples Filtering in Module M3 (Knowledge-guided Robust Deep Model Training)
+To run Module M2 to get a fully labeled training set, as well as filtering likely mislabeled examples in them using the KTEF routine in M3, use the following.
 
 ```
-python ./M2_active_pu_transduction.py $data_id
+python ./M2_active_pu_transduction.py $data_id 0.1 0.7 0 amp_dist
 ```
 
-### 4. Execute Module M3 (Knowledge-guided Robust Deep Model Training)
-To run Module M3, first use the following to apply the Knowledge-guided Training Example Filtering (KTEF) routine.
+This will lead to the filtered dataset stored at `./result/filtered_$data_id.pkl` by default, which can be loaded via the following Python code.
 
 ```
-python ./M3_filter_examples.py $data_id
+import pickle
+
+data_id = 'MO1' # or 'MO2', 'MO3'
+
+fname = f'./result/filtered_{data_id}.pkl'
+with open(fname, 'rb') as f:
+  fit_examples, fit_labels, val_examples, val_labels = pickle.load(fname)
 ```
 
-This will lead to the filtered dataset stored at `./result/KTEF_$data_id` by default. You can use it to feed it into either WNG-TS-1DCNN or iEDeal with the original authors' implementations.
+in which `fit_examples` and `fit_labels` are for model fitting, and `val_examples` and `val_labels` are for validation.
+
+You can then use this filtered dataset to train a core deep model of your choosing. To evaluate your model, use the following Python code to load the test data.
+
+```
+import pickle
+
+data_id = 'MO1' # or 'MO2', 'MO3'
+
+fname = f'./data/{data_id}.pkl'
+with open(fname, 'rb') as f:
+  _, _, _, _, test_examples, test_labels = pickle.load(fname)
+```
+
+(Note: In our experiments, we used the original authors' implementations of the iEDeal and WNG-TS-1DCNN core deep models. Due to the lack of explicit permission from the original authors, we are unable to post their implementations here. Please contact the original authors or follow the code links in their papers to gain access to the code.)
